@@ -1,6 +1,6 @@
 use crate::tvg::{IntervalTvgEdge};
 pub mod tvg;
-mod tvg_path;
+pub mod tvg_path;
 
 #[cfg(test)]
 mod tests {

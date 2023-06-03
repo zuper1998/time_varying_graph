@@ -1,6 +1,6 @@
 [package]
 name = "time_varying_graph"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A complex graph package for interacting with time-varying graphs. For more information you can check out https://arxiv.org/abs/1012.0009"
