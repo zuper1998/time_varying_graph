@@ -1,10 +1,10 @@
 [package]
 name = "time_varying_graph"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-description = "A complex graph package for interacting with time-varying graphs. For more information you can check out <https://arxiv.org/abs/1012.0009>"
-repository = "https://github.com/zuper1998/allen_interval_algebra/"
+description = "A complex graph package for interacting with time-varying graphs. For more information you can check out https://arxiv.org/abs/1012.0009"
+repository = "https://github.com/zuper1998/time_varying_graph"
 keywords = ["math", "graph","interval", "time-varying-graph", "interval-graph"]
 
 [dependencies]
