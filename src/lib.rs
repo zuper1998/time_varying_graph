@@ -43,6 +43,8 @@ pub mod tvg_path;
 #[cfg(test)]
 mod tests {
     use allen_interval_algebra::interval::Interval;
+    use indexmap::IndexSet;
+    use petgraph::graph::NodeIndex;
     use crate::tvg::{IntervalTvgEdge, Tvg, TvgData};
 
     #[test]
@@ -111,6 +113,47 @@ mod tests {
 
 
     }
+
+    fn tvg_bfs_test() {
+        use crossbeam_channel::bounded;
+
+
+        let data = r#"
+            {
+              "nodes": [
+                "Node1",
+                "Node2"
+              ],
+              "edges": [
+                {
+                  "from": "Node1",
+                  "to": "Node2",
+                  "start" : 0.0,
+                  "end" : 1.0,
+                  "data": null
+                }
+              ]
+            }"#;
+        let mut tvg = Tvg::new();
+        tvg.add_edges_from_json(data.to_string());
+        let start = tvg.find_node("Node1".to_string()).unwrap();
+        let visited: IndexSet<NodeIndex> = IndexSet::from_iter(Some(start));
+
+        let (sender, receiver) = bounded(50);
+
+        let main_t = std::thread::spawn(move || {
+            tvg.tvg_bfs(start, visited, &sender, |data: &String| {data.contains("Node2")}, None  );
+        });
+
+        while let Ok((node_name, path)) = receiver.recv() {
+            println!("Worker got it! {}",node_name);
+        }
+
+
+
+
+    }
+
 
 
 
