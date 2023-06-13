@@ -79,7 +79,8 @@ use petgraph::dot::{Config, Dot};
 use petgraph::graph::{NodeIndex};
 use indexmap::IndexSet;
 use allen_interval_algebra::interval::Interval;
-use petgraph::prelude::EdgeIndex;
+use petgraph::prelude::{EdgeIndex, EdgeRef};
+use petgraph::visit::IntoEdges;
 use serde::Deserialize;
 use crate::IntervalTvgEdge::*;
 use crate::tvg_path::TvgPath;
@@ -271,21 +272,50 @@ impl Tvg {
         }
     }
 
-
+    /// Export the graph to json
     pub fn export_to_json(&self) -> String {
 
-        todo!();
 
         let mut ret = String::new();
 
 
-        let mut nodes: Vec<String> = Vec::new();
-        let mut edges: Vec<JsonTvgData> = Vec::new();
+        let mut data: Vec<JsonTvgData> = Vec::new();
         for node_index in  self.graph.node_indices() {
-            nodes.push(self.graph[node_index].to_string());
+            data.nodes.push(self.graph[node_index].to_string());
+            for edge_ref in self.graph.edges(node_index){
+
+                for edge in edge_ref.weight() {
+
+                    match edge {
+                        BaseEdge(interval) => {
+                            data.edges.push(JsonTvgEdge{
+                                from: self.graph[edge_ref.source()].clone(),
+                                to: self.graph[edge_ref.target()].clone(),
+                                start: interval.start,
+                                end: interval.end,
+                                data: None
+                            })
+                        }
+                        DataEdge(interval,data) => {
+                            edges.push(JsonTvgEdge{
+                                from: self.graph[edge_ref.source()].clone(),
+                                to: self.graph[edge_ref.target()].clone(),
+                                start: interval.start,
+                                end: interval.end,
+                                data: Some(*data)
+                            })
+                        }
+
+
+                    }
+
+
+
+                }
+            }
+
         }
-
-
+        ret = serde_json::to_string(&data).unwrap();
 
         ret
     }
