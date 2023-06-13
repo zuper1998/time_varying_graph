@@ -9,7 +9,11 @@ The main purpose of this library is to provide a simple library for interacting 
 
 
 ```rust
-let data = r#"
+use time_varying_graph::tvg::{Tvg};
+
+
+
+    let data = r#"
         {
           "nodes": [
             "Node1",
@@ -27,8 +31,8 @@ let data = r#"
         }"#;
 
 
-// Create a time-varying graph:
-let time_varying_graph = Tvg::new();
-// Add data from json (recommended)
-time_varying_graph.add_edges_from_json(data.to_string());
+    // Create a time-varying graph:
+    let mut time_varying_graph = Tvg::new();
+    // Add data from json (recommended)
+    time_varying_graph.add_edges_from_json(data.to_string());
 ```
