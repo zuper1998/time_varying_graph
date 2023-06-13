@@ -178,6 +178,42 @@ mod tests {
 
     }
 
+    #[test]
+    fn test_json_export(){
+        let mut tvg = Tvg::new();
+        let mut v: Vec<TvgData> = Vec::new();
+
+        v.push(TvgData {
+            start_node: String::from("N1"),
+            end_node:  String::from("N2"),
+            interval: IntervalTvgEdge::DataEdge {
+                0: Interval {
+                    start: 0.0,
+                    end: 1.0,
+                },
+                1: 52.0,
+            },
+        });
+        v.push(TvgData {
+            start_node: String::from("N1"),
+            end_node:  String::from("N3"),
+            interval: IntervalTvgEdge::DataEdge {
+                0: Interval {
+                    start: 0.0,
+                    end: 3.0,
+                },
+                1: 52.1,
+            },
+        });
+
+        tvg.add_edges_from_data(v);
+
+      assert!(tvg.export_to_json().eq(
+          &String::from("{\"nodes\":[\"N1\",\"N2\",\"N3\"],\"edges\":[{\"from\":\"N1\",\"to\":\"N3\",\"start\":0.0,\"end\":3.0,\"data\":52.1},{\"from\":\"N1\",\"to\":\"N2\",\"start\":0.0,\"end\":1.0,\"data\":52.0}]}")))
+
+
+
+    }
 
 
 

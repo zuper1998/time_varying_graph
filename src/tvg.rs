@@ -81,7 +81,7 @@ use indexmap::IndexSet;
 use allen_interval_algebra::interval::Interval;
 use petgraph::prelude::{EdgeIndex, EdgeRef};
 use petgraph::visit::IntoEdges;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use crate::IntervalTvgEdge::*;
 use crate::tvg_path::TvgPath;
 
@@ -108,13 +108,13 @@ impl TvgEdge {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize,Deserialize)]
 struct JsonTvgData {
     nodes : Vec<String>,
     edges: Vec<JsonTvgEdge>
 
 }
-#[derive(Deserialize)]
+#[derive(Serialize,Deserialize)]
 struct JsonTvgEdge{
     from: String,
     to: String,
@@ -279,16 +279,16 @@ impl Tvg {
         let mut ret = String::new();
 
 
-        let mut data: Vec<JsonTvgData> = Vec::new();
+        let mut json_data: JsonTvgData = JsonTvgData{nodes: Vec::new(),edges: Vec::new()};
         for node_index in  self.graph.node_indices() {
-            data.nodes.push(self.graph[node_index].to_string());
+            json_data.nodes.push(self.graph[node_index].to_string());
             for edge_ref in self.graph.edges(node_index){
 
                 for edge in edge_ref.weight() {
 
                     match edge {
                         BaseEdge(interval) => {
-                            data.edges.push(JsonTvgEdge{
+                            json_data.edges.push(JsonTvgEdge{
                                 from: self.graph[edge_ref.source()].clone(),
                                 to: self.graph[edge_ref.target()].clone(),
                                 start: interval.start,
@@ -297,7 +297,7 @@ impl Tvg {
                             })
                         }
                         DataEdge(interval,data) => {
-                            edges.push(JsonTvgEdge{
+                            json_data.edges.push(JsonTvgEdge{
                                 from: self.graph[edge_ref.source()].clone(),
                                 to: self.graph[edge_ref.target()].clone(),
                                 start: interval.start,
@@ -315,7 +315,7 @@ impl Tvg {
             }
 
         }
-        ret = serde_json::to_string(&data).unwrap();
+        ret = serde_json::to_string(&json_data).unwrap();
 
         ret
     }
