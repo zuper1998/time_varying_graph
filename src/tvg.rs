@@ -107,7 +107,20 @@ impl TvgEdge {
     }
 }
 
+#[derive(Deserialize)]
+struct JsonTvgData {
+    nodes : Vec<String>,
+    edges: Vec<JsonTvgEdge>
 
+}
+#[derive(Deserialize)]
+struct JsonTvgEdge{
+    from: String,
+    to: String,
+    start: f32,
+    end: f32,
+    data: Option<f32>
+}
 
 /// Enum for the time-varying graph edge types. `BaseEdge` is for simple edges compromised from only
 /// an interval, while `DataEdge` should be used in cases where there is also some data associated
@@ -174,20 +187,7 @@ impl Tvg {
     /// }
     /// ```
     pub fn add_edges_from_json(&mut self ,data: String) {
-        #[derive(Deserialize)]
-        struct JsonTvgData {
-            nodes : Vec<String>,
-            edges: Vec<JsonTvgEdge>
 
-        }
-        #[derive(Deserialize)]
-        struct JsonTvgEdge{
-            from: String,
-            to: String,
-            start: f32,
-            end: f32,
-            data: Option<f32>
-        }
 
 
         let values : JsonTvgData = serde_json::from_str(&data).unwrap();
@@ -249,8 +249,6 @@ impl Tvg {
     /// from the number of steps in the TVG there might be need to just walk trough all the possible
     /// paths between two points. This function support setting a `target`  function. The function
     /// will send all the paths to the supplied crossbeam_channel.
-    ///
-
     pub fn tvg_bfs(&self, start: NodeIndex, visited: IndexSet<NodeIndex>, paths: &crossbeam_channel::Sender<(String, TvgPath)>,
                    search_function: fn(&String) -> bool, max_depth: Option<usize>) {
 
@@ -273,6 +271,24 @@ impl Tvg {
         }
     }
 
+
+    pub fn export_to_json(&self) -> String {
+
+        todo!();
+
+        let mut ret = String::new();
+
+
+        let mut nodes: Vec<String> = Vec::new();
+        let mut edges: Vec<JsonTvgData> = Vec::new();
+        for node_index in  self.graph.node_indices() {
+            nodes.push(self.graph[node_index].to_string());
+        }
+
+
+
+        ret
+    }
 
 
     fn add_path_to_channel(&self, visited: &IndexSet<NodeIndex>, paths: &crossbeam_channel::Sender<(String, TvgPath)>,
