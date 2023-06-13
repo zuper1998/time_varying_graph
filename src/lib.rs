@@ -114,6 +114,7 @@ mod tests {
 
     }
 
+    #[test]
     fn tvg_bfs_test() {
         use crossbeam_channel::bounded;
 
@@ -122,9 +123,32 @@ mod tests {
             {
               "nodes": [
                 "Node1",
-                "Node2"
+                "Node2",
+                "Node3",
+                "Node4"
               ],
               "edges": [
+                {
+                  "from": "Node1",
+                  "to": "Node2",
+                  "start" : 0.0,
+                  "end" : 1.0,
+                  "data": null
+                },
+                {
+                  "from": "Node2",
+                  "to": "Node3",
+                  "start" : 0.0,
+                  "end" : 1.0,
+                  "data": null
+                },
+                {
+                  "from": "Node2",
+                  "to": "Node4",
+                  "start" : 0.0,
+                  "end" : 1.0,
+                  "data": null
+                },
                 {
                   "from": "Node1",
                   "to": "Node2",
@@ -141,12 +165,12 @@ mod tests {
 
         let (sender, receiver) = bounded(50);
 
-        let main_t = std::thread::spawn(move || {
-            tvg.tvg_bfs(start, visited, &sender, |data: &String| {data.contains("Node2")}, None  );
+        let _ = std::thread::spawn(move || {
+            tvg.tvg_bfs(start, visited, &sender, |data: &String| {data.contains("Node4")}, None  );
         });
 
         while let Ok((node_name, path)) = receiver.recv() {
-            println!("Worker got it! {}",node_name);
+            assert!(node_name.eq("Node4"))
         }
 
 
