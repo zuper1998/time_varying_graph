@@ -1,3 +1,6 @@
+//! Time varying graph
+
+
 use std::fs::File;
 use std::io::Write;
 
