@@ -36,16 +36,18 @@
 //!
 
 
-use crate::tvg::{IntervalTvgEdge};
-pub mod tvg;
+
 pub mod tvg_path;
+pub mod tvg;
 
 #[cfg(test)]
 mod tests {
     use allen_interval_algebra::interval::Interval;
     use indexmap::IndexSet;
     use petgraph::graph::NodeIndex;
-    use crate::tvg::{IntervalTvgEdge, Tvg, TvgData};
+    use crate::tvg::internals::IntervalTvgEdge;
+    use crate::tvg::serialization::TvgData;
+    use crate::tvg::tvg_graph::Tvg;
 
     #[test]
     fn test_json_load() {
@@ -210,9 +212,6 @@ mod tests {
 
       assert!(tvg.export_to_json().eq(
           &String::from("{\"nodes\":[\"N1\",\"N2\",\"N3\"],\"edges\":[{\"from\":\"N1\",\"to\":\"N3\",\"start\":0.0,\"end\":3.0,\"data\":52.1},{\"from\":\"N1\",\"to\":\"N2\",\"start\":0.0,\"end\":1.0,\"data\":52.0}]}")))
-
-
-
     }
 
 

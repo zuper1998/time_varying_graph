@@ -1,7 +1,7 @@
 //! Path in the TVG
 
 
-use crate::tvg::TvgEdge;
+use crate::tvg::tvg_graph::TvgEdge;
 
 
 

@@ -1,79 +1,7 @@
-//! Time varying graph
-//! It can be used in the following way:
-//! ```rust
-//! use crossbeam_channel::bounded;
-//! use time_varying_graph::tvg::{Tvg};
-//! use indexmap::IndexSet;
-//! use petgraph::graph::NodeIndex;
-//!         let data = r#"
-//!             {
-//!               "nodes": [
-//!                 "Node1",
-//!                 "Node2",
-//!                 "Node3",
-//!                 "Node4"
-//!               ],
-//!               "edges": [
-//!                 {
-//!                   "from": "Node1",
-//!                   "to": "Node2",
-//!                   "start" : 0.0,
-//!                   "end" : 1.0,
-//!                   "data": null
-//!                 },
-//!                 {
-//!                   "from": "Node2",
-//!                   "to": "Node3",
-//!                   "start" : 0.0,
-//!                   "end" : 1.0,
-//!                   "data": null
-//!                 },
-//!                 {
-//!                   "from": "Node2",
-//!                   "to": "Node4",
-//!                   "start" : 0.0,
-//!                   "end" : 1.0,
-//!                   "data": null
-//!                 },
-//!                 {
-//!                   "from": "Node1",
-//!                   "to": "Node2",
-//!                   "start" : 0.0,
-//!                   "end" : 1.0,
-//!                   "data": null
-//!                 }
-//!               ]
-//!             }"#;
-//!         let mut tvg = Tvg::new();
-//!         tvg.add_edges_from_json(data.to_string());
-//!         let start = tvg.find_node("Node1".to_string()).unwrap();
-//!         let visited: IndexSet<NodeIndex> = IndexSet::from_iter(Some(start));
-//!
-//!         // We use a bounded container otherwise we would run out of memory in case of bigger graphs
-//!         let (sender, receiver) = bounded(50);
-//!
-//!         // Run the bfs in a thread to be able to instantly use its output
-//!         let _ = std::thread::spawn(move || {
-//!             tvg.tvg_bfs(start, visited, &sender, |data: &String| {data.contains("Node4")}, None  );
-//!         });
-//! 
-//!         while let Ok((node_name, path)) = receiver.recv() {
-//!             assert!(node_name.eq("Node4"))
-//!             // Do some other stuff with the path and the node.
-//!         }
-//!
-//!
-//!
-//!
-//! ```
-//!
-//!
-//!
 
 use std::fs::File;
 use std::io::Write;
 
-use log::error;
 use petgraph::{Directed, Graph, Outgoing};
 use petgraph::dot::{Config, Dot};
 use petgraph::graph::{NodeIndex};
@@ -81,7 +9,9 @@ use indexmap::IndexSet;
 use allen_interval_algebra::interval::Interval;
 use petgraph::prelude::{EdgeIndex, EdgeRef};
 use serde::{Deserialize, Serialize};
-use crate::IntervalTvgEdge::*;
+use crate::tvg::internals::IntervalTvgEdge;
+use crate::tvg::internals::IntervalTvgEdge::{BaseEdge, DataEdge};
+use crate::tvg::serialization::{TvgData,JsonTvgData,JsonTvgEdge};
 use crate::tvg_path::TvgPath;
 
 /// Struct for containing multiple `IntervalTvgEdge`-s
@@ -107,51 +37,8 @@ impl TvgEdge {
     }
 }
 
-#[derive(Serialize,Deserialize)]
-struct JsonTvgData {
-    nodes : Vec<String>,
-    edges: Vec<JsonTvgEdge>
 
-}
-#[derive(Serialize,Deserialize)]
-struct JsonTvgEdge{
-    from: String,
-    to: String,
-    start: f32,
-    end: f32,
-    data: Option<f32>
-}
 
-/// Enum for the time-varying graph edge types. `BaseEdge` is for simple edges compromised from only
-/// an interval, while `DataEdge` should be used in cases where there is also some data associated
-/// with an interval. For example data sent over time.
-#[derive(Debug, Clone, Copy)]
-pub enum IntervalTvgEdge {
-    /// Simple interval edge without data
-    BaseEdge(Interval<f32>),
-    /// Interval edge with float data
-    DataEdge(Interval<f32>, f32),
-}
-
-impl IntervalTvgEdge {
-    /// `eq` function for the IntervalTvgEdge, in case of comparing two different edges it will panic!
-    pub fn eq(self, other: &IntervalTvgEdge) -> bool {
-        return match (&self, other) {
-            (BaseEdge(interval), BaseEdge(other_interval)) => {
-                interval.start == other_interval.start && interval.end == other_interval.end
-            }
-
-            (DataEdge(interval, _data), DataEdge(other_interval, _other_data)) => {
-                interval.start == other_interval.start && interval.end == other_interval.end
-            }
-
-            _ => {
-                error!("Edge types are not matching! self: {:?} other: {:?}",self,other);
-                panic!("Edge types are not matching! self: {:?} other: {:?}", self, other);
-            }
-        };
-    }
-}
 
 
 /// A time varying-graph (TVG) representation
@@ -273,8 +160,6 @@ impl Tvg {
 
     /// Export the graph to json
     pub fn export_to_json(&self) -> String {
-
-
         let mut json_data: JsonTvgData = JsonTvgData{nodes: Vec::new(),edges: Vec::new()};
         for node_index in  self.graph.node_indices() {
             json_data.nodes.push(self.graph[node_index].to_string());
@@ -382,13 +267,6 @@ impl Tvg {
 }
 
 
-/// Data container for Tvg construction
-#[derive(Debug)]
-pub struct TvgData {
-    pub start_node: String,
-    pub end_node: String,
 
-    pub interval: IntervalTvgEdge,
-}
 
 
