@@ -80,7 +80,6 @@ use petgraph::graph::{NodeIndex};
 use indexmap::IndexSet;
 use allen_interval_algebra::interval::Interval;
 use petgraph::prelude::{EdgeIndex, EdgeRef};
-use petgraph::visit::IntoEdges;
 use serde::{Deserialize, Serialize};
 use crate::IntervalTvgEdge::*;
 use crate::tvg_path::TvgPath;
@@ -276,9 +275,6 @@ impl Tvg {
     pub fn export_to_json(&self) -> String {
 
 
-        let mut ret = String::new();
-
-
         let mut json_data: JsonTvgData = JsonTvgData{nodes: Vec::new(),edges: Vec::new()};
         for node_index in  self.graph.node_indices() {
             json_data.nodes.push(self.graph[node_index].to_string());
@@ -315,10 +311,10 @@ impl Tvg {
             }
 
         }
-        ret = serde_json::to_string(&json_data).unwrap();
-
-        ret
+        serde_json::to_string(&json_data).unwrap()
     }
+
+
 
 
     fn add_path_to_channel(&self, visited: &IndexSet<NodeIndex>, paths: &crossbeam_channel::Sender<(String, TvgPath)>,
